@@ -1,10 +1,26 @@
 import sys
-from PyQt5.QtWidgets import  QApplication, QWidget, QVBoxLayout, QPushButton, QProgressBar, QLabel, QFileDialog, QSpinBox, QTabWidget, QHBoxLayout
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtWidgets import  QLineEdit, QApplication, QWidget, QVBoxLayout, QPushButton, QProgressBar, QLabel, QFileDialog, QSpinBox, QTabWidget, QHBoxLayout
+from PyQt5.QtCore import QThread, pyqtSignal, Qt, QEvent
 import fitz  # PyMuPDF
 from pptx import Presentation
 from pptx.util import Inches
 from io import BytesIO
+import os
+import subprocess
+
+class ClickableLineEdit(QLineEdit):
+    def __init__(self, parent=None):
+        super(ClickableLineEdit, self).__init__(parent)
+
+    def mouseDoubleClickEvent(self, event):
+        path = self.text()
+        if os.path.exists(path):
+            # 根据操作系统打开文件
+            if os.name == 'nt':  # Windows
+                os.startfile(path)
+            elif os.name == 'posix':  # macOS, Linux
+                subprocess.run(['open' if os.uname().sysname == 'Darwin' else 'xdg-open', path])
+        super(ClickableLineEdit, self).mouseDoubleClickEvent(event)
 
 class ConvertThread(QThread):
     error = pyqtSignal(str)
@@ -119,6 +135,13 @@ class PDFtoPPTXConverter(QWidget):
         self.infoLabel.setStyleSheet("color: black;")  # 默认信息显示为黑色
         mainTabLayout.addWidget(self.infoLabel)
 
+        # 使用ClickableLineEdit替换原来的QLineEdit用于显示pptx文件的路径
+        self.pathLineEdit = ClickableLineEdit(self)  # 使用自定义的ClickableLineEdit
+        self.pathLineEdit.setReadOnly(True)  # 设置为只读
+        self.pathLineEdit.setStyleSheet("color: black; background: white; border: none;")  # 设置样式
+        mainTabLayout.addWidget(self.pathLineEdit)
+
+
     def selectPDF(self):
         self.pdf_path, _ = QFileDialog.getOpenFileName(self, "Select PDF file", "", "PDF files (*.pdf)")
         if not self.pdf_path:
@@ -126,6 +149,10 @@ class PDFtoPPTXConverter(QWidget):
             self.infoLabel.setText("Warning: No PDF file selected.")
             return
         self.pptx_path = self.pdf_path.replace('.pdf', '.pptx')
+
+        # 仅显示PDF文件名
+        pdf_filename = os.path.basename(self.pdf_path)        
+        self.infoLabel.setText(pdf_filename)
 
     def startConversion(self):
         if not self.pdf_path or not self.pptx_path:  # 检查是否已选择PDF文件
@@ -137,6 +164,7 @@ class PDFtoPPTXConverter(QWidget):
             self.infoLabel.setStyleSheet("color: red;")
             self.infoLabel.setText("Warning: DPI value must be between 72 and 600.")
             return
+        self.btnConvert.setEnabled(False)  # 禁用转换按钮
         self.thread = ConvertThread(self.pdf_path, self.pptx_path, dpi_value)
         self.thread.error.connect(self.showError)
         self.thread.progress.connect(self.updateProgress)
@@ -157,9 +185,12 @@ class PDFtoPPTXConverter(QWidget):
             self.conversionFinished()
 
     def conversionFinished(self):
-        self.infoLabel.setStyleSheet("color: green;")  # 完成信息显示为绿色
-        self.infoLabel.setText("Conversion completed successfully.")  # 显示转换完成信息
-
+        self.infoLabel.setStyleSheet("color: green;")   # 完成信息显示为绿色
+        self.infoLabel.setText("Conversion completed successfully.")    # 显示转换完成信息
+        self.pathLineEdit.setText(self.pptx_path)   # 更新路径显示控件为转换后的pptx文件的路径
+        self.pathLineEdit.setToolTip(self.pptx_path)    # 设置工具提示以显示完整路径
+        self.btnConvert.setEnabled(True)    # 转换完成后重新启用转换按钮          
+      
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = PDFtoPPTXConverter()
