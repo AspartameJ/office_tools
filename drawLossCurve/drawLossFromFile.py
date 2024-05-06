@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 假设loss数据按行存放在一个文本文件中
-with open('loss_history.txt', 'r') as file:
+with open('yolov8x.txt', 'r') as file:
     lines = file.readlines()
     # 假设每行是一个浮点数，直接转换为float类型
     loss_history = [float(line.strip()) for line in lines]

@@ -94,20 +94,70 @@ class WeeklyReportGenerator:
         self.set_font_style()
         self.save_document(self.doc_name + '.docx')
 
+    @staticmethod
+    def read_report(filename):
+        doc = Document(filename)
+        data = {
+            "year": None,
+            "week": None,
+            "month": None,
+            "day_start": None,
+            "day_end": None,
+            "name": None,
+            "project_names": [],
+            "jobs_list": [],
+            "questions_list": [],
+            "plans_list": []
+        }
+        
+        for para in doc.paragraphs:
+            text = para.text.strip()
+            if '报告时间' in text:
+                date_info = text.split('：')[1]
+                dates = date_info.split('—')
+                start_date = dates[0].split('年')[1].split('月')
+                end_date = dates[1].split('年')[1].split('月')
+                data['year'] = int(dates[0].split('年')[0])
+                data['month'] = int(start_date[0])
+                data['day_start'] = int(start_date[1].split('日')[0])
+                data['day_end'] = int(end_date[1].split('日')[0])
+            elif '报告人' in text:
+                data['name'] = text.split('：')[1].strip()
+            elif '本周主要工作内容' in text:
+                current_section = 'jobs'
+            elif '存在问题' in text:
+                current_section = 'questions'
+            elif '下周重点工作计划' in text:
+                current_section = 'plans'
+            else:
+                if current_section == 'jobs':
+                    if para.style.font.bold:
+                        data['project_names'].append(text)
+                        data['jobs_list'].append([])
+                    else:
+                        data['jobs_list'][-1].append(text)
+                elif current_section == 'questions':
+                    data['questions_list'].append(text)
+                elif current_section == 'plans':
+                    data['plans_list'].append(text)
+        return data
+
 # 使用示例
 if __name__ == "__main__":
-    report_generator = WeeklyReportGenerator(year=2024, week=17, month=4, day_start=22, day_end=26, name='杨佳')
-    project_names = ['项目一名称', '项目二名称']
-    jobs_list = [
-        ['任务1详情', '任务2详情'],
-        ['任务1详情', '任务2详情', '任务3详情']
-    ]
-    questions_list = ['问题1详情', '问题2详情']
-    plans_list = ['下周计划1详情', '下周计划2详情']
+    # report_generator = WeeklyReportGenerator(year=2024, week=17, month=4, day_start=22, day_end=26, name='杨佳')
+    # project_names = ['项目一名称', '项目二名称']
+    # jobs_list = [
+    #     ['任务1详情', '任务2详情'],
+    #     ['任务1详情', '任务2详情', '任务3详情']
+    # ]
+    # questions_list = ['问题1详情', '问题2详情']
+    # plans_list = ['下周计划1详情', '下周计划2详情']
 
-    report_generator.generate_report(
-        project_names=project_names,
-        jobs_list=jobs_list,
-        questions_list=questions_list,
-        plans_list=plans_list
-    )
+    # report_generator.generate_report(
+    #     project_names=project_names,
+    #     jobs_list=jobs_list,
+    #     questions_list=questions_list,
+    #     plans_list=plans_list
+    # )
+    filename = "系统与测试部AI开发部工作周报-2024W17-杨佳.docx"
+    print(WeeklyReportGenerator.read_report(filename))
