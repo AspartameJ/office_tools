@@ -54,7 +54,7 @@ class WeeklyReportGenerator:
         main_work.runs[0].font.size = Pt(12)
         main_work.runs[0].font.bold = True
         for i, project_name in enumerate(project_names):
-            project_name_runs = self.doc.add_paragraph().add_run(project_name)
+            project_name_runs = self.doc.add_paragraph().add_run(str(i+1) + '.' + project_name)
             project_name_runs.font.bold = True
             project_name_runs.font.color.rgb = RGBColor(0,0,255)
             jobs = self.doc.add_paragraph()
@@ -140,6 +140,7 @@ class WeeklyReportGenerator:
         self.set_font_style()
         self.save_document(self.doc_name + '.docx')
         self.generate_excel(project_names, jobs_list, questions_list, plans_list)
+        self.doc = Document()
 
     def generate_html_report(self, project_names, jobs_list, questions_list, plans_list):
         greeting = self.greeting_str.replace('\n', '<br>\t')

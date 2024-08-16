@@ -38,8 +38,8 @@ class WeeklyReportGUI(QWidget):
         self.jobsListEdit = QTextEdit()
         self.questionsListEdit = QTextEdit()
         self.plansListEdit = QTextEdit()
-        self.toEmailEdit = QLineEdit("weekreport@yctco.com.cn,songmeng@yctco.com.cn,mingzhende@yctco.com.cn")
-        self.ccEmailEdit = QLineEdit("daiquan@yctco.com.cn,yexin517@yctco.com.cn,dhxiao0394@yctco.com.cn,xuxiao@yctco.com.cn,tphe0469@yctco.com.cn,yswang0472@yctco.com.cn,hzhxiao9896@yctco.com.cn,yangjia0395@yctco.com.cn,jywang0027@yctco.com.cn,tlzhou0520@yctco.com.cn")
+        self.toEmailEdit = QLineEdit("weekreport@yctco.com.cn,songmeng@yctco.com.cn,daiquan@yctco.com.cn")
+        self.ccEmailEdit = QLineEdit("yexin517@yctco.com.cn,dhxiao0394@yctco.com.cn,xuxiao@yctco.com.cn,tphe0469@yctco.com.cn,yswang0472@yctco.com.cn,hzhxiao9896@yctco.com.cn,yangjia0395@yctco.com.cn,jywang0027@yctco.com.cn,tlzhou0520@yctco.com.cn")
 
         # 添加到布局
         fields = [
